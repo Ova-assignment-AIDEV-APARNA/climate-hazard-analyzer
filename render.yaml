@@ -1,0 +1,22 @@
+# Render Blueprint for the FastAPI backend (free web service).
+# Secrets (MONGO_URI, CORS_ORIGINS) are set in the Render dashboard, not here.
+services:
+  - type: web
+    name: climate-hazard-api
+    runtime: python
+    plan: free
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.7"
+      - key: MONGO_URI
+        sync: false
+      - key: CORS_ORIGINS
+        sync: false
+      - key: TRUSTED_PROXY_HOPS
+        value: "1"
+      - key: NOMINATIM_USER_AGENT
+        sync: false
