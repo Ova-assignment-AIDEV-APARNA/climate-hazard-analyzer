@@ -4,18 +4,25 @@ A web app that detects heatwaves in 75 years of daily temperature data for any
 point, place or lat-lon box, and reports whether they are becoming more
 frequent, longer or more intense, with statistics that say how sure we can be.
 
-- **Live app:** _add Vercel URL_
-- **API:** _add Render URL_ (`/docs` has the interactive OpenAPI page)
-- **Demo video:** _optional link_
+- **Live app:** https://climate-hazard-analyzer-delta.vercel.app
+- **API:** https://climate-hazard-analyzer-kx5n.onrender.com (health check: [`/api/health`](https://climate-hazard-analyzer-kx5n.onrender.com/api/health), interactive docs: [`/docs`](https://climate-hazard-analyzer-kx5n.onrender.com/docs))
+- **Source:** https://github.com/Ova-assignment-AIDEV-APARNA/climate-hazard-analyzer
 
-<!-- Add a screenshot of the deployed app here: ![screenshot](docs/screenshot.png) -->
+> The API runs on Render's free tier, which sleeps after ~15 minutes without
+> traffic. The first request after that takes 30–60 seconds; later ones are fast.
+> The first analysis of a new place also downloads ~75 years of daily data,
+> which can take up to a minute; repeat requests come from the MongoDB cache.
+
+<!-- To add a screenshot: save it as docs/screenshot.png, then replace this line with: ![App screenshot](docs/screenshot.png) -->
 
 ---
 
 ## What it does
 
 1. Choose a region: search a city, state or country (OpenStreetMap), click a
-   point on the map, or draw a box (Leaflet).
+   point on the map, or draw a box (Leaflet). Picking a new region runs the
+   analysis straight away; if you then edit coordinates or settings by hand,
+   a banner says the results are out of date and offers an **Update** button.
 2. Choose a time range (1950 to the last complete year). Heatwave is the
    hazard, selected by default; drought and heavy rain are listed as planned.
 3. The app shows:
@@ -241,10 +248,17 @@ npm run dev                 # http://localhost:5173, /api is proxied to :8000
 1. **MongoDB Atlas:** create a free M0 cluster and a database user, allow
    access from anywhere (Render's free tier has no fixed IP), copy the
    connection string.
-2. **Render:** New → Blueprint → this repo (uses `render.yaml`). Set
-   `MONGO_URI`, `CORS_ORIGINS` (your Vercel URL) and `NOMINATIM_USER_AGENT`.
-3. **Vercel:** import the repo, root directory `frontend`, set `VITE_API_URL`
-   to the Render URL.
+2. **Render:** New → Web Service → this repo (or New → Blueprint, which reads
+   `render.yaml`). Settings:
+   - Root Directory `backend`
+   - Build Command `pip install -r requirements.txt`
+   - Start Command `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
+   - Environment: `MONGO_URI`, `CORS_ORIGINS` (your Vercel URL, comma-separated
+     with any others), `NOMINATIM_USER_AGENT`, `TRUSTED_PROXY_HOPS=1`,
+     `PYTHON_VERSION=3.12.7`
+3. **Vercel:** import the repo, Root Directory `frontend`, framework Vite, set
+   `VITE_API_URL` to the Render URL (no trailing slash).
+4. Put the Vercel URL into Render's `CORS_ORIGINS` and redeploy.
 
 Render's free tier sleeps when idle; the first request after a pause takes
 30–60 s, and the UI says so.
@@ -287,7 +301,21 @@ Render's free tier sleeps when idle; the first request after a pause takes
 
 ## AI tools used
 
-- **Claude (Anthropic)**: _describe how you used it, e.g. design discussion,
-  generating the first version of the backend and frontend, writing tests and
-  this README; then what you reviewed, changed, ran and verified yourself._
-- _Any other tools._
+**Claude (Anthropic)**, used through the Claude app, for most of the
+implementation.
+
+- **What I decided:** the stack (FastAPI, MongoDB Atlas, React with Vite,
+  Chart.js and Leaflet, Render and Vercel), which bonus features to build
+  (map region picker, Mann-Kendall and regression, CSV/PDF export), and the
+  scope (heatwave first, done properly, rather than several hazards half-done).
+- **What Claude did:** generated the first version of the backend (data
+  ingestion and caching, cleaning, heatwave detection, trend statistics,
+  insights, exports, rate limiting), the React frontend, the 46 backend
+  tests, and the first draft of this README.
+- **What I did:** ran the app locally against real Open-Meteo data and
+  checked the results made sense; found and got fixed a usability bug (the
+  results did not update when a new region was picked); set up MongoDB Atlas
+  and confirmed the collections and caching work; deployed the backend to
+  Render and the frontend to Vercel, debugging the failed first deploy (a
+  missing Root Directory) and the CORS setup; and reviewed the code so I can
+  explain and change any part of it.
