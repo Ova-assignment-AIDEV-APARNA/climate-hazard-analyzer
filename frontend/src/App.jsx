@@ -71,7 +71,12 @@ export default function App() {
     }
   }, [region, settings])
 
-  useEffect(() => { run() }, []) // analyse the default (or shared) region on first load
+  // Re-analyse whenever a new region is picked (search result, map click or drawn box).
+  // Typing coordinates by hand keeps the same key, so it waits for the button instead.
+  useEffect(() => { run() }, [region.key]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // True when the region or settings on the left no longer match the results on the right.
+  const stale = !!resultParams && toQuery(analysisParams(region, settings)) !== toQuery(resultParams)
 
   const showYear = (y) => {
     setYear(y)
@@ -102,6 +107,18 @@ export default function App() {
           {result && (
             <div style={{ opacity: loading ? 0.55 : 1, transition: 'opacity .2s', display: 'flex',
               flexDirection: 'column', gap: 20, minWidth: 0 }}>
+              {stale && !loading && (
+                <div className="panel stale" role="status">
+                  <span>The results below are for <strong>{result.meta.region.label}</strong>. You have changed the
+                    region or settings.</span>
+                  <button className="btn" type="button" onClick={run}>Update results</button>
+                </div>
+              )}
+              {loading && (
+                <div className="panel stale" role="status">
+                  <span>Analysing <strong>{region.name}</strong>… a new place can take up to a minute the first time.</span>
+                </div>
+              )}
               <Headline result={result} />
               <StatTiles result={result} />
               <TrendChart result={result} onYearClick={showYear} />

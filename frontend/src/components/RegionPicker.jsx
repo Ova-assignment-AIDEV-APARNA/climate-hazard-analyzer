@@ -72,9 +72,11 @@ export default function RegionPicker({ region, onChange }) {
   const shortName = (name) => name.split(',').slice(0, 2).join(',').trim()
 
   const setPoint = (lat, lon, name = '') =>
-    onChange(makeRegion({ type: 'point', lat, lon, name: name || `${lat.toFixed(2)}, ${lon.toFixed(2)}` }))
+    onChange(makeRegion({ type: 'point', lat: round4(lat), lon: round4(lon),
+      name: name || `${lat.toFixed(2)}, ${lon.toFixed(2)}` }))
   const setBox = (bbox, name = '') =>
-    onChange(makeRegion({ type: 'box', bbox, name: name || 'Custom box' }))
+    onChange(makeRegion({ type: 'box', name: name || 'Custom box',
+      bbox: { south: round4(bbox.south), west: round4(bbox.west), north: round4(bbox.north), east: round4(bbox.east) } }))
 
   const editBox = (k, v) => {
     const bbox = { ...region.bbox, [k]: Number(v) }
@@ -188,3 +190,4 @@ export default function RegionPicker({ region, onChange }) {
 }
 
 const round2 = (v) => Math.round(v * 100) / 100
+const round4 = (v) => Math.round(v * 10000) / 10000

@@ -193,3 +193,8 @@ table.data tbody tr:hover { background: var(--surface-2); }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 footer.app-footer { text-align: center; font-size: 0.78rem; color: var(--text-muted); padding: 0 16px 32px; }
 footer.app-footer a { color: inherit; }
+.stale {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 10px 14px; background: var(--warn-bg); border-color: transparent; color: var(--text-primary);
+  font-size: 0.9rem;
+}
